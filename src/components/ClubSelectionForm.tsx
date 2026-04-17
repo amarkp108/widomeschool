@@ -233,10 +233,16 @@ export function ClubSelectionForm() {
                 <div className="flex-1">
                   <h3 className="font-bold text-[#1b3a2d]">Choose Club</h3>
                   <p className="text-xs text-[#6b7280]">
-                    Select a club from{" "}
-                    <Badge className="bg-[#1b3a2d]/10 text-[#1b3a2d] hover:bg-[#1b3a2d]/10 text-xs">
-                      {selectedDomain.name}
-                    </Badge>
+                    {singleChoiceDomains.includes(selectedDomain.name) ? (
+                      "You can select only one option"
+                    ) : (
+                      <>
+                        Select a club from{" "}
+                        <Badge className="bg-[#1b3a2d]/10 text-[#1b3a2d] hover:bg-[#1b3a2d]/10 text-xs">
+                          {selectedDomain.name}
+                        </Badge>
+                      </>
+                    )}
                   </p>
                 </div>
                 <div className="text-right text-xs text-[#6b7280]">
@@ -455,7 +461,7 @@ function Header() {
           className="h-16 w-16 rounded-full object-cover"
         />
         <div>
-          <h1 className="text-3xl font-bold text-white">Club Registration</h1>
+          <h1 className="text-3xl font-bold text-white">Clubs Registration</h1>
           <p className="text-lg text-white">Wisdom World School - Kurukshetra</p>
         </div>
         <p className="text-xs text-white opacity-70">Developed by Okie Dokie</p>
