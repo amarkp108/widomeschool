@@ -1,6 +1,5 @@
 export interface Club {
   name: string;
-  incharge: string;
 }
 
 export interface Domain {
@@ -14,75 +13,75 @@ export const domains: Domain[] = [
     id: 1,
     name: "Fine Arts",
     clubs: [
-      { name: "3-D Texture Art", incharge: "Ms Ruby" },
-      { name: "Handmade Jewellery", incharge: "Ms Monita" },
-      { name: "Anime Portrait", incharge: "Mr Maninder" },
-      { name: "Miniature Painting", incharge: "Mr Nikhil" },
-      { name: "Lumedecore & Funky Feet", incharge: "Dr Parveen" },
-      { name: "Design Thinking and Innovation", incharge: "Ms Shruti Goyal" },
-      { name: "Creative Painting", incharge: "Dr R K Singh" },
+      { name: "3-D Texture Art" },
+      { name: "Handmade Jewellery" },
+      { name: "Anime Portrait" },
+      { name: "Miniature Painting" },
+      { name: "Lumedecore & Funky Feet" },
+      { name: "Design Thinking and Innovation" },
+      { name: "Creative Painting" },
     ],
   },
   {
     id: 2,
     name: "Dance",
     clubs: [
-      { name: "Classical Dance", incharge: "Ms Anuradha" },
-      { name: "Contemporary: Hip Hop Dance", incharge: "Mr Amit" },
-      { name: "Free Style & Folk Dance", incharge: "Mr Jassi" },
+      { name: "Classical Dance" },
+      { name: "Contemporary: Hip Hop Dance" },
+      { name: "Free Style & Folk Dance" },
     ],
   },
   {
     id: 3,
     name: "Music",
     clubs: [
-      { name: "Instrumental: Rhythm; Percussion", incharge: "Mr Ishwar" },
-      { name: "Keyboard and Vocal", incharge: "Ms Priyanka" },
+      { name: "Instrumental: Rhythm; Percussion" },
+      { name: "Keyboard and Vocal" },
     ],
   },
   {
     id: 4,
     name: "Dramatics",
-    clubs: [{ name: "Stage to Sensor", incharge: "Mr Anil" }],
+    clubs: [{ name: "Stage to Sensor" }],
   },
   {
     id: 5,
     name: "Sports",
     clubs: [
-      { name: "Chess", incharge: "Mr Gautam" },
-      { name: "Carrom", incharge: "Mr Satpal" },
-      { name: "Table Tennis", incharge: "Ms Satpal / Ms Suman" },
+      { name: "Chess" },
+      { name: "Carrom" },
+      { name: "Table Tennis" },
     ],
   },
   {
     id: 6,
     name: "Skill Development",
     clubs: [
-      { name: "Tech Ninjas", incharge: "Mr Sandeep & IT Team" },
-      { name: "Sugar & Spice", incharge: "Ms Sangeeta Kapoor" },
-      { name: "Health & Wellness", incharge: "Ms Ritika / Ms Seema Gupta" },
-      { name: "Mass Media", incharge: "Ms Neha Juneja / Ms Pushpa" },
+      { name: "Tech Ninjas" },
+      { name: "Sugar & Spice" },
+      { name: "Health & Wellness" },
+      { name: "Mass Media" },
     ],
   },
   {
     id: 7,
     name: "Literary",
     clubs: [
-      { name: "Literary Club", incharge: "Mr Dharmender / Ms Snehlata" },
-      { name: "Comic Strip", incharge: "Ms Himanshi / Ms Anubhuti" },
-      { name: "Namaste Germany!", incharge: "Ms Vanshika / Mr Prashant" },
-      { name: "Namaste Japan!", incharge: "Mr Akhil / Mr Subhash" },
-      { name: "Namaste France!", incharge: "Mr Manu" },
+      { name: "Literary Club" },
+      { name: "Comic Strip" },
+      { name: "Namaste Germany!" },
+      { name: "Namaste Japan!" },
+      { name: "Namaste France!" },
     ],
   },
   {
     id: 8,
     name: "Academic",
     clubs: [
-      { name: "STEM", incharge: "Ms Gazal / Ms Kavita" },
-      { name: "Logic Legends", incharge: "Mr Munish / Ms Anjali" },
-      { name: "Maths Manthan", incharge: "Ms Sarabjeet / Ms Yashika" },
-      { name: "Youth Parliament", incharge: "Mr Sanju / Mr Gaurav / Ms Deepa" },
+      { name: "STEM" },
+      { name: "Logic Legends" },
+      { name: "Maths Manthan" },
+      { name: "Youth Parliament" },
     ],
   },
 ];

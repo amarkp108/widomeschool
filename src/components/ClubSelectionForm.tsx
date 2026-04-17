@@ -20,10 +20,14 @@ export function ClubSelectionForm() {
   const [selectedClubs, setSelectedClubs] = useState<Club[]>([]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [maxDialogOpen, setMaxDialogOpen] = useState(false);
+  const [confirmationDialogState, setConfirmationDialogState] = useState<
+    "confirm" | "minimum" | null
+  >(null);
   const [submitted, setSubmitted] = useState(false);
 
   const maxSelections = 6;
   const totalSelected = selectedClubs.length;
+  const isSubmitReady = totalSelected === maxSelections;
   const singleChoiceDomains = ["Dance", "Music", "Sports"];
   const selectedDomainAllowsMultiple = selectedDomain
     ? !singleChoiceDomains.includes(selectedDomain.name)
@@ -42,6 +46,16 @@ export function ClubSelectionForm() {
   };
 
   const handleSubmit = () => {
+    if (!isSubmitReady) {
+      setConfirmationDialogState("minimum");
+      return;
+    }
+
+    setConfirmationDialogState("confirm");
+  };
+
+  const handleConfirmSubmit = () => {
+    setConfirmationDialogState(null);
     setSubmitted(true);
   };
 
@@ -132,12 +146,6 @@ export function ClubSelectionForm() {
                 </div>
               </div>
             </div>
-            <Button
-              onClick={handleReset}
-              className="mt-6 bg-[#1b3a2d] hover:bg-[#153024] text-white px-8"
-            >
-              Register Again
-            </Button>
           </div>
         </div>
       </div>
@@ -286,7 +294,6 @@ export function ClubSelectionForm() {
                     >
                       <div>
                         <span className="font-semibold text-[#1b3a2d] text-sm">{club.name}</span>
-                        <p className="mt-0.5 text-xs text-[#6b7280]">Incharge: {club.incharge}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         {isSelected && <CheckCircle2 className="h-5 w-5 text-[#1b3a2d] shrink-0" />}
@@ -303,7 +310,6 @@ export function ClubSelectionForm() {
                   {previewOpen ? "Hide Preview" : "Show Preview"}
                 </Button>
                 <Button
-                  disabled={selectedClubs.length === 0}
                   onClick={handleSubmit}
                   className="px-8 h-11 rounded-xl bg-[#1b3a2d] hover:bg-[#153024] text-white"
                 >
@@ -370,6 +376,49 @@ export function ClubSelectionForm() {
                 </div>
               )}
             </div>
+
+            <Dialog
+              open={confirmationDialogState !== null}
+              onOpenChange={(open) => !open && setConfirmationDialogState(null)}
+            >
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>
+                    {confirmationDialogState === "confirm"
+                      ? "Confirm Submission"
+                      : "Selection Required"}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {confirmationDialogState === "confirm"
+                      ? "No changes can be done once submitted. Are you sure you want to submit?"
+                      : `You need to select ${maxSelections} clubs before submitting. Please add more clubs.`}
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  {confirmationDialogState === "confirm" ? (
+                    <>
+                      <DialogClose asChild>
+                        <Button className="px-6 h-11 rounded-xl bg-[#f3f4f6] text-[#1b3a2d] hover:bg-[#e5e7eb]">
+                          Cancel
+                        </Button>
+                      </DialogClose>
+                      <Button
+                        onClick={handleConfirmSubmit}
+                        className="px-6 h-11 rounded-xl bg-[#1b3a2d] hover:bg-[#153024] text-white"
+                      >
+                        Confirm
+                      </Button>
+                    </>
+                  ) : (
+                    <DialogClose asChild>
+                      <Button className="px-6 h-11 rounded-xl bg-[#1b3a2d] hover:bg-[#153024] text-white">
+                        OK
+                      </Button>
+                    </DialogClose>
+                  )}
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
             <Dialog open={maxDialogOpen} onOpenChange={setMaxDialogOpen}>
               <DialogContent>
