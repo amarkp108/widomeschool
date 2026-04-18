@@ -69,7 +69,7 @@ export const domains: Domain[] = [
       { name: "Comic Strip" },
       { name: "Namaste Germany! (Only for German language students)" },
       { name: "Namaste Japan! (Only for German language students)" },
-      { name: "Namaste France!" },
+      { name: "Namaste France!(Opne to all students)" },
     ],
   },
   {
