@@ -333,7 +333,7 @@ export function ClubSelectionForm() {
                   <h3 className="font-bold text-[#1b3a2d]">Choose Club</h3>
                   <p className="text-xs text-[#6b7280]">
                     {singleChoiceDomains.includes(selectedDomain.name) ? (
-                      selectedDomain.name === "Dance" ? (
+                      selectedDomain.name === "Music" ? (
                         <>
                           Select any one choice{" "}
                           <span className="font-bold text-black">(Basic proficiency needed)</span>

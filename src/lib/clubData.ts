@@ -67,8 +67,8 @@ export const domains: Domain[] = [
     clubs: [
       { name: "Literary Club" },
       { name: "Comic Strip" },
-      { name: "Namaste Germany!" },
-      { name: "Namaste Japan!" },
+      { name: "Namaste Germany! (Only for German language students)" },
+      { name: "Namaste Japan! (Only for German language students)" },
       { name: "Namaste France!" },
     ],
   },
