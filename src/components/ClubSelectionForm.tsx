@@ -97,6 +97,13 @@ export function ClubSelectionForm() {
   };
 
   const handleConfirmSubmit = async () => {
+    const existing = localStorage.getItem("submittedRegNo");
+
+    if (existing && existing.toLowerCase() === studentDetails.regNo.toLowerCase()) {
+      alert("You have already submitted the form");
+      return;
+    }
+
     setConfirmationDialogState(null);
     setSubmitError(null);
     setSubmitting(true);
@@ -116,6 +123,10 @@ export function ClubSelectionForm() {
         timestamp: new Date().toISOString(),
         url: window.location.href,
       });
+
+      // 🔥 Save regNo after successful submission
+      localStorage.setItem("submittedRegNo", studentDetails.regNo);
+
       setSubmitted(true);
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : String(error));
