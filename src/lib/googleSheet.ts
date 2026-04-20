@@ -27,10 +27,8 @@ export async function submitRegistrationToGoogleSheet(data: SheetRegistrationDat
       stream: data.stream,
       section: data.section,
       clubs: data.clubs,
-      //   clubDomains: data.clubDomains,
     }),
   });
 
-  // ✅ bas success return karo
   return { success: true };
 }

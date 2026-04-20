@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { domains, type Domain, type Club } from "@/lib/clubData";
 import { submitRegistrationToGoogleSheet } from "@/lib/googleSheet";
 import { Button } from "@/components/ui/button";
@@ -16,26 +16,13 @@ import { cn } from "@/lib/utils";
 import { ArrowDown, ArrowUp, BookOpen, CheckCircle2, School } from "lucide-react";
 import schoolLogo from "@/assets/school-logo.jpeg";
 
-const normalizeQueryParam = (value: string | null) => {
-  if (!value) return "";
-
-  const decoded = decodeURIComponent(value).trim();
-  const placeholderMatch = decoded.match(/^\$\{(?:zf:)?(.+?)\}$/);
-  if (placeholderMatch) {
-    return placeholderMatch[1] || "";
-  }
-
-  return decoded;
-};
-
 export function ClubSelectionForm() {
   const [selectedDomain, setSelectedDomain] = useState<Domain | null>(null);
   const [selectedClubs, setSelectedClubs] = useState<Club[]>([]);
+  const [scholarId, setScholarId] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
   const [maxDialogOpen, setMaxDialogOpen] = useState(false);
-  const [confirmationDialogState, setConfirmationDialogState] = useState<
-    "confirm" | "minimum" | null
-  >(null);
+  const [confirmationDialogState, setConfirmationDialogState] = useState<"confirm" | "minimum" | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -44,37 +31,15 @@ export function ClubSelectionForm() {
   const totalSelected = selectedClubs.length;
   const isSubmitReady = totalSelected === maxSelections;
   const singleChoiceDomains = ["Dance", "Music", "Sports"];
-  const basicprofdom = ["Dance"];
   const selectedDomainAllowsMultiple = selectedDomain
     ? !singleChoiceDomains.includes(selectedDomain.name)
     : true;
-
-  const [studentDetails, setStudentDetails] = useState<{
-    name: string;
-    course: string;
-    regNo: string;
-    stream: string;
-    section: string;
-  }>({
-    name: "",
-    course: "",
-    regNo: "",
-    stream: "",
-    section: "",
-  });
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const name = normalizeQueryParam(params.get("name"));
-    const course = normalizeQueryParam(params.get("course"));
-    const regNo = normalizeQueryParam(params.get("regNo"));
-    const stream = normalizeQueryParam(params.get("stream"));
-    const section = normalizeQueryParam(params.get("section"));
-
-    setStudentDetails({ name, course, regNo, stream, section });
-  }, []);
-
   const isMaxReached = totalSelected >= maxSelections;
+
+  const getDomainNameForClub = (club: Club) =>
+    domains.find((domain) =>
+      domain.clubs.some((domainClub) => domainClub.name === club.name)
+    )?.name ?? "";
 
   const handleDomainSelect = (domain: Domain) => {
     if (selectedDomain?.id === domain.id) {
@@ -82,54 +47,48 @@ export function ClubSelectionForm() {
       setPreviewOpen(false);
       return;
     }
-
     setSelectedDomain(domain);
     setPreviewOpen(false);
   };
 
   const handleSubmit = () => {
-    if (!isSubmitReady) {
+    if (!scholarId.trim()) {
+      setSubmitError("Please enter your Scholar ID before submitting.");
       setConfirmationDialogState("minimum");
       return;
     }
-
+    if (!isSubmitReady) {
+      setSubmitError(null);
+      setConfirmationDialogState("minimum");
+      return;
+    }
+    setSubmitError(null);
     setConfirmationDialogState("confirm");
   };
 
   const handleConfirmSubmit = async () => {
-    const existing = localStorage.getItem("submittedRegNo");
-
-    if (existing && existing.toLowerCase() === studentDetails.regNo.toLowerCase()) {
-      alert("You have already submitted the form");
-      return;
-    }
-
     setConfirmationDialogState(null);
     setSubmitError(null);
     setSubmitting(true);
-
     const selectedClubNames = selectedClubs.map((club) => club.name).join(", ");
-    const selectedClubDomains = selectedClubs.map((club) => getDomainNameForClub(club)).join(", ");
-
+    const selectedClubDomains = selectedClubs
+      .map((club) => getDomainNameForClub(club))
+      .join(", ");
     try {
       await submitRegistrationToGoogleSheet({
-        name: studentDetails.name,
-        course: studentDetails.course,
-        regNo: studentDetails.regNo,
-        stream: studentDetails.stream,
-        section: studentDetails.section,
+        name: "",
+        course: "",
+        regNo: scholarId,
+        stream: "",
+        section: "",
         clubs: selectedClubNames,
         clubDomains: selectedClubDomains,
         timestamp: new Date().toISOString(),
         url: window.location.href,
       });
-
-      // 🔥 Save regNo after successful submission
-      localStorage.setItem("submittedRegNo", studentDetails.regNo);
-
       setSubmitted(true);
-    } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : String(error));
+    } catch (err) {
+      setSubmitError("Submission failed. Please try again.");
       setConfirmationDialogState("confirm");
     } finally {
       setSubmitting(false);
@@ -139,18 +98,16 @@ export function ClubSelectionForm() {
   const handleReset = () => {
     setSelectedDomain(null);
     setSelectedClubs([]);
+    setScholarId("");
     setPreviewOpen(false);
     setMaxDialogOpen(false);
     setSubmitted(false);
   };
 
   const selectedCountForDomain = (domain: Domain) =>
-    selectedClubs.filter((club) => domain.clubs.some((domainClub) => domainClub.name === club.name))
-      .length;
-
-  const getDomainNameForClub = (club: Club) =>
-    domains.find((domain) => domain.clubs.some((domainClub) => domainClub.name === club.name))
-      ?.name ?? "";
+    selectedClubs.filter((club) =>
+      domain.clubs.some((domainClub) => domainClub.name === club.name)
+    ).length;
 
   const moveClub = (index: number, direction: -1 | 1) => {
     setSelectedClubs((prev) => {
@@ -165,8 +122,8 @@ export function ClubSelectionForm() {
 
   const selectedClubsPreview = selectedClubs.map((club, index) => {
     const domainName = getDomainNameForClub(club);
-    const previousDomainName = index > 0 ? getDomainNameForClub(selectedClubs[index - 1]) : "";
-
+    const previousDomainName =
+      index > 0 ? getDomainNameForClub(selectedClubs[index - 1]) : "";
     return {
       club,
       domainName,
@@ -186,12 +143,14 @@ export function ClubSelectionForm() {
             </div>
             <h2 className="text-2xl font-bold text-[#1b3a2d]">Registration Successful!</h2>
             <p className="mt-2 text-[#6b7280]">Your club preference has been recorded.</p>
+            <p className="mt-1 text-sm text-[#6b7280]">
+              Scholar ID:{" "}
+              <span className="font-semibold text-[#1b3a2d]">{scholarId}</span>
+            </p>
             <div className="mt-6 rounded-xl bg-[#f8faf9] p-6 text-left text-sm max-w-md mx-auto">
               <div className="mb-4 flex items-center justify-between rounded-lg bg-[#eff1f3] px-4 py-3 text-sm font-semibold text-[#1b3a2d]">
                 <span>Selected clubs</span>
-                <span className="text-[#6b7280]">
-                  {totalSelected}/{maxSelections}
-                </span>
+                <span className="text-[#6b7280]">{totalSelected}/{maxSelections}</span>
               </div>
               <div className="overflow-hidden rounded-xl border border-[#e5e7eb] text-sm">
                 <div className="grid grid-cols-2 gap-4 bg-[#f3f4f6] px-4 py-3 text-xs uppercase tracking-[0.12em] text-[#6b7280]">
@@ -232,8 +191,9 @@ export function ClubSelectionForm() {
   return (
     <div className="min-h-screen bg-[#f0f2f5]">
       <Header />
-
       <div className="mx-auto max-w-4xl px-4 py-8 -mt-8 relative z-10 space-y-6">
+
+        {/* Student Details */}
         <div className="rounded-2xl bg-white p-6 shadow-sm">
           <div className="mb-5 flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#f0f2f5]">
@@ -244,25 +204,19 @@ export function ClubSelectionForm() {
             </div>
           </div>
           <div className="overflow-hidden rounded-xl border border-[#e5e7eb] text-sm">
-            <div className="grid grid-cols-2 gap-4 bg-[#f3f4f6] px-4 py-3 text-xs uppercase tracking-[0.12em] text-[#6b7280]">
-              <span>Name</span>
-              <span>{studentDetails.name || "-"}</span>
+            <div className="grid grid-cols-2 bg-[#f3f4f6] px-4 py-3 text-xs uppercase tracking-[0.12em] text-[#6b7280]">
+              <span>Field</span>
+              <span>Value</span>
             </div>
-            <div className="grid grid-cols-2 gap-4 px-4 py-3 text-sm text-[#1b3a2d]">
-              <span className="font-semibold text-[#6b7280]">Course</span>
-              <span>{studentDetails.course || "-"}</span>
-            </div>
-            <div className="grid grid-cols-2 gap-4 bg-[#f9fafb] px-4 py-3 text-sm text-[#1b3a2d]">
-              <span className="font-semibold text-[#6b7280]">Reg No</span>
-              <span>{studentDetails.regNo || "-"}</span>
-            </div>
-            <div className="grid grid-cols-2 gap-4 px-4 py-3 text-sm text-[#1b3a2d]">
-              <span className="font-semibold text-[#6b7280]">Stream</span>
-              <span>{studentDetails.stream || "-"}</span>
-            </div>
-            <div className="grid grid-cols-2 gap-4 bg-[#f9fafb] px-4 py-3 text-sm text-[#1b3a2d]">
-              <span className="font-semibold text-[#6b7280]">Section</span>
-              <span>{studentDetails.section || "-"}</span>
+            <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-4 px-4 py-3 bg-white items-center">
+              <span className="text-[#6b7280] text-sm font-medium">Scholar ID</span>
+              <input
+                type="text"
+                value={scholarId}
+                onChange={(e) => setScholarId(e.target.value)}
+                placeholder="e.g. WWS2024001"
+                className="rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm text-[#1b3a2d] outline-none focus:border-[#1b3a2d] transition-colors w-full"
+              />
             </div>
           </div>
         </div>
@@ -287,13 +241,14 @@ export function ClubSelectionForm() {
             </div>
             <div>
               <h3 className="font-bold text-[#1b3a2d]">Choose Domain</h3>
-              <p className="text-xs text-[#6b7280]">Select any six clubs in order of preference</p>
+              <p className="text-xs text-[#6b7280]">
+                Select any six clubs in order of preference
+              </p>
             </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {domains.map((domain) => {
               const selectedCount = selectedCountForDomain(domain);
-
               return (
                 <button
                   key={domain.id}
@@ -321,7 +276,9 @@ export function ClubSelectionForm() {
                   <span
                     className={cn(
                       "block text-xs mt-1 font-normal",
-                      selectedDomain?.id === domain.id ? "text-white/70" : "text-[#9ca3af]",
+                      selectedDomain?.id === domain.id
+                        ? "text-white/70"
+                        : "text-[#9ca3af]",
                     )}
                   >
                     {domain.clubs.length} clubs
@@ -347,7 +304,9 @@ export function ClubSelectionForm() {
                       selectedDomain.name === "Music" ? (
                         <>
                           Select any one choice{" "}
-                          <span className="font-bold text-black">(Basic proficiency needed)</span>
+                          <span className="font-bold text-black">
+                            (Basic proficiency needed)
+                          </span>
                         </>
                       ) : (
                         "Select any one choice"
@@ -371,41 +330,42 @@ export function ClubSelectionForm() {
               </div>
               <div className="grid gap-3">
                 {selectedDomain.clubs.map((club) => {
-                  const isSelected = selectedClubs.some((selected) => selected.name === club.name);
-                  const domainClubNames = selectedDomain.clubs.map((domainClub) => domainClub.name);
-                  const hasSameDomainSelected = selectedClubs.some((selected) =>
-                    domainClubNames.includes(selected.name),
+                  const isSelected = selectedClubs.some(
+                    (selected) => selected.name === club.name
                   );
-
+                  const domainClubNames = selectedDomain.clubs.map(
+                    (domainClub) => domainClub.name
+                  );
+                  const hasSameDomainSelected = selectedClubs.some((selected) =>
+                    domainClubNames.includes(selected.name)
+                  );
                   return (
                     <button
                       key={club.name}
                       onClick={() => {
                         if (isSelected) {
                           setSelectedClubs((prev) =>
-                            prev.filter((selected) => selected.name !== club.name),
+                            prev.filter((selected) => selected.name !== club.name)
                           );
                           return;
                         }
-
                         if (!selectedDomainAllowsMultiple) {
                           if (isMaxReached && !hasSameDomainSelected) {
                             setMaxDialogOpen(true);
                             return;
                           }
-
                           setSelectedClubs((prev) => [
-                            ...prev.filter((selected) => !domainClubNames.includes(selected.name)),
+                            ...prev.filter(
+                              (selected) => !domainClubNames.includes(selected.name)
+                            ),
                             club,
                           ]);
                           return;
                         }
-
                         if (isMaxReached) {
                           setMaxDialogOpen(true);
                           return;
                         }
-
                         setSelectedClubs((prev) => [...prev, club]);
                       }}
                       className={cn(
@@ -416,10 +376,14 @@ export function ClubSelectionForm() {
                       )}
                     >
                       <div>
-                        <span className="font-semibold text-[#1b3a2d] text-sm">{club.name}</span>
+                        <span className="font-semibold text-[#1b3a2d] text-sm">
+                          {club.name}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        {isSelected && <CheckCircle2 className="h-5 w-5 text-[#1b3a2d] shrink-0" />}
+                        {isSelected && (
+                          <CheckCircle2 className="h-5 w-5 text-[#1b3a2d] shrink-0" />
+                        )}
                       </div>
                     </button>
                   );
@@ -459,7 +423,9 @@ export function ClubSelectionForm() {
                             )}
                           >
                             <span
-                              className={item.showDomainName ? "font-semibold" : "text-[#6b7280]"}
+                              className={
+                                item.showDomainName ? "font-semibold" : "text-[#6b7280]"
+                              }
                             >
                               {item.showDomainName ? item.domainName : ""}
                             </span>
@@ -509,18 +475,20 @@ export function ClubSelectionForm() {
                   <DialogTitle>
                     {confirmationDialogState === "confirm"
                       ? "Confirm Submission"
-                      : "Selection Required"}
+                      : "Action Required"}
                   </DialogTitle>
                   <DialogDescription>
                     {confirmationDialogState === "confirm"
                       ? "No changes can be done once submitted. Are you sure you want to submit?"
+                      : !scholarId.trim()
+                      ? "Please enter your Scholar ID before submitting."
                       : `You need to select ${maxSelections} clubs before submitting. Please add more clubs.`}
                   </DialogDescription>
-                  {submitError ? (
+                  {submitError && (
                     <div className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">
                       {submitError}
                     </div>
-                  ) : null}
+                  )}
                 </DialogHeader>
                 <DialogFooter>
                   {confirmationDialogState === "confirm" ? (
@@ -589,15 +557,6 @@ function Header() {
         </div>
         <p className="text-xs text-white">Developed by Okie Dokie</p>
       </div>
-    </div>
-  );
-}
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between">
-      <span className="text-[#6b7280]">{label}</span>
-      <span className="font-medium text-[#1b3a2d]">{value}</span>
     </div>
   );
 }

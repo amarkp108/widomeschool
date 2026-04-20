@@ -35,7 +35,10 @@ export const domains: Domain[] = [
   {
     id: 3,
     name: "Music",
-    clubs: [{ name: "Instrumental: Rhythm; Percussion" }, { name: "Keyboard and Vocal" }],
+    clubs: [
+      { name: "Instrumental: Rhythm; Percussion" },
+      { name: "Keyboard and Vocal" },
+    ],
   },
   {
     id: 4,
